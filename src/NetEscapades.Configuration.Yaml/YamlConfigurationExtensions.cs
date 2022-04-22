@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using Microsoft.Extensions.FileProviders;
 using NetEscapades.Configuration.Yaml;
+using YamlDotNet.RepresentationModel;
 
 namespace Microsoft.Extensions.Configuration
 {
@@ -90,6 +91,30 @@ namespace Microsoft.Extensions.Configuration
         /// <param name="configureSource">Configures the source.</param>
         /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
         public static IConfigurationBuilder AddYamlFile(this IConfigurationBuilder builder, Action<YamlConfigurationSource> configureSource)
+            => builder.Add(configureSource);
+            
+        
+        /// <summary>
+        /// Adds the YAML configuration in <paramref name="document"/> to <paramref name="builder"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="document">The <see cref="YamlDocument"/> providing the configuration data.</param>
+        /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
+        public static IConfigurationBuilder AddYamlDocument(this IConfigurationBuilder builder, YamlDocument document)
+        {
+            return AddYamlDocument(builder, s =>
+            {
+                s.Document = document;
+            } );
+        }
+
+        /// <summary>
+        /// Adds a YAML configuration source to <paramref name="builder"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IConfigurationBuilder"/> to add to.</param>
+        /// <param name="configureSource">Configures the source.</param>
+        /// <returns>The <see cref="IConfigurationBuilder"/>.</returns>
+        public static IConfigurationBuilder AddYamlDocument(this IConfigurationBuilder builder, Action<YamlDocumentConfigurationSource> configureSource)
             => builder.Add(configureSource);
     }
 }

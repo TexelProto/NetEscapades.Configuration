@@ -20,14 +20,24 @@ namespace NetEscapades.Configuration.Yaml
 
             // https://dotnetfiddle.net/rrR2Bb
             var yaml = new YamlStream();
-            yaml.Load(new StreamReader(input, detectEncodingFromByteOrderMarks: true));
+            yaml.Load( new StreamReader( input, detectEncodingFromByteOrderMarks: true ) );
+            return Parse( yaml );
+        }
+        
+        public IDictionary<string, string> Parse(YamlDocument input)
+        {
+            _data.Clear();
+            _context.Clear();
 
-            if (yaml.Documents.Any())
+            var yaml = new YamlStream(input);
+            return Parse( yaml );
+        }
+        
+        private IDictionary<string,string> Parse(YamlStream yaml)
+        {
+            foreach (var document in yaml.Documents)
             {
-                var mapping = (YamlMappingNode)yaml.Documents[0].RootNode;
-
-                // The document node is a mapping node
-                VisitYamlMappingNode(mapping);
+                VisitTopLevelYaml( document.RootNode );
             }
 
             return _data;
@@ -37,6 +47,22 @@ namespace NetEscapades.Configuration.Yaml
         {
             var context = ((YamlScalarNode)yamlNodePair.Key).Value;
             VisitYamlNode(context, yamlNodePair.Value);
+        }
+
+        private void VisitTopLevelYaml(YamlNode node)
+        {
+            if (node is YamlMappingNode mappingNode)
+            {
+                VisitYamlMappingNode(mappingNode);
+            }
+            else if (node is YamlSequenceNode sequenceNode)
+            {
+                VisitYamlSequenceNode(sequenceNode);
+            }
+            else
+            {
+                throw new InvalidOperationException( $"Encountered unexpected top level yaml node. Node must be {nameof(YamlMappingNode)} or {nameof(YamlSequenceNode)}" );
+            }
         }
 
         private void VisitYamlNode(string context, YamlNode node)
